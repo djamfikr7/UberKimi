@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../repositories/trip_repository.dart';
 
@@ -41,16 +42,20 @@ class TripCubit extends Cubit<TripState> {
     emit(TripLoading());
     try {
       final response = await _repository.requestTrip(riderId, tripData);
-      emit(TripSearching(response['tripId']));
-      
-      // SIMULATION:
-      await Future.delayed(const Duration(seconds: 5));
-      emit(TripDriverAssigned({
-        'name': 'John Doe',
-        'rating': 4.9,
-        'vehicle': 'Toyota Camry',
-        'plate': 'ABC-1234'
-      }));
+      final tripId = response['tripId'];
+      emit(TripSearching(tripId));
+
+      // Listen for updates
+      _repository.connectToTripUpdates(tripId).listen((message) {
+        try {
+          final data = jsonDecode(message);
+          if (data['type'] == 'trip_update' && data['status'] == 'DRIVER_ASSIGNED') {
+            emit(TripDriverAssigned(data['driver']));
+          }
+        } catch (e) {
+          print('Error parsing WS message: $e');
+        }
+      });
     } catch (e) {
       emit(TripError(e.toString()));
     }
