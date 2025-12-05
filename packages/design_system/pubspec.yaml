@@ -1,0 +1,16 @@
+name: design_system
+description: Premium neumorphic design system for UberKimi apps
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.1.0
+
+flutter:
+  uses-material-design: true
